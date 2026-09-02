@@ -18,7 +18,7 @@ export class ApiError extends Error {
 }
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api/v1";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://testing-production-1105.up.railway.app/api/v1";
 
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -182,7 +182,7 @@ apiClient.uploadForm = <T = unknown>(endpoint: string, formData: FormData, optio
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api/v1";
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://testing-production-1105.up.railway.app/api/v1";
   const url = endpoint.startsWith("http")
     ? endpoint
     : `${API_BASE}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
