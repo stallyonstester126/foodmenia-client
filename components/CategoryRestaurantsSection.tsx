@@ -249,15 +249,25 @@ export default function CategoryRestaurantsSection({
     };
 
     const keywords = keywordMap[categoryId] || [categoryId];
+    const activeCat = availableCategories.find((c) => c.id === categoryId);
+    const labelUpper = (activeCat?.label || "").toUpperCase();
+    const idUpper = categoryId.toUpperCase();
 
-    // Priority A: Check if any assigned cuisine matches keywords
+    // Priority A: Check if any assigned cuisine directly matches category name, label, or keywords
     const matchesAssignedCuisine = assignedCuisineNames.some((cName) =>
+      cName === idUpper ||
+      cName === labelUpper ||
+      labelUpper.includes(cName) ||
+      cName.includes(idUpper) ||
+      idUpper.includes(cName) ||
       keywords.some((kw) => cName.includes(kw))
     );
     if (matchesAssignedCuisine) return true;
 
-    // Priority B: Check if joined cuisine string matches keywords
-    const matchesJoinedCuisine = keywords.some((kw) => joinedCuisineString.includes(kw));
+    // Priority B: Check if joined cuisine string matches keywords or label
+    const matchesJoinedCuisine =
+      keywords.some((kw) => joinedCuisineString.includes(kw)) ||
+      (labelUpper && joinedCuisineString.includes(labelUpper));
     if (matchesJoinedCuisine) return true;
 
     // Priority C: Check if restaurant/shop name matches keywords

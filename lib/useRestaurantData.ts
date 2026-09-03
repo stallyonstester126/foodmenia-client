@@ -98,6 +98,7 @@ export function useRestaurants(params?: {
   search?: string;
   sort?: string;
   type?: "restaurant" | "shop";
+  limit?: number;
 }) {
   const queryKey = [
     "restaurants",
@@ -116,6 +117,7 @@ export function useRestaurants(params?: {
         if (params?.search) query.append("search", params.search);
         if (params?.sort) query.append("sort", params.sort);
         if (params?.type) query.append("type", params.type);
+        query.append("limit", String(params?.limit || 100));
 
         const qs = query.toString();
         const res = await apiClient.get<unknown>(`/restaurants${qs ? `?${qs}` : ""}`);
