@@ -6,6 +6,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useCartStore } from "@/lib/cartStore";
 import CartConflictModal from "@/components/cart/CartConflictModal";
+import { getCurrencySymbol } from "@/lib/formatters";
 
 export default function CartPageSection() {
   const {
@@ -21,6 +22,7 @@ export default function CartPageSection() {
   }, [fetchCart]);
 
   const cartItems = cart?.items || [];
+  const currencySymbol = getCurrencySymbol(cart?.currency);
   const deliveryMode = cart?.fulfillmentType || "delivery";
   const deliveryTime = cart?.deliveryEstimate || "40-60 min";
   const subtotal = cart?.subtotal || 0;
@@ -146,7 +148,7 @@ export default function CartPageSection() {
                             key={opt.id || idx}
                             className="bg-amber-100/70 text-amber-900 text-[10px] font-poppins font-semibold px-2 py-0.5 rounded-full"
                           >
-                            + {opt.name} {opt.price > 0 ? `(Rs. ${opt.price})` : ""}
+                            + {opt.name} {opt.price > 0 ? `(${currencySymbol}${opt.price})` : ""}
                           </span>
                         ))}
                       </div>
@@ -189,7 +191,7 @@ export default function CartPageSection() {
                 {/* Col 3: Price */}
                 <div className="col-span-2 sm:col-span-3 text-right">
                   <span className="font-poppins font-bold text-sm sm:text-base text-[#1A1A1A]">
-                    Rs. {itemRowTotal.toFixed(2)}
+                    {currencySymbol}{itemRowTotal.toFixed(2)}
                   </span>
                 </div>
 
@@ -229,7 +231,7 @@ export default function CartPageSection() {
               Subtotal
             </span>
             <span className="font-bold text-sm sm:text-base text-[#1A1A1A]">
-              Rs.{subtotal.toFixed(2)}
+              {currencySymbol}{subtotal.toFixed(2)}
             </span>
           </div>
 
@@ -263,7 +265,7 @@ export default function CartPageSection() {
               </svg>
             </div>
             <span className="font-medium text-[#1A1A1A]">
-              Rs. {platformFee.toFixed(2)}
+              {currencySymbol}{platformFee.toFixed(2)}
             </span>
           </div>
 
@@ -273,7 +275,7 @@ export default function CartPageSection() {
               Total <span className="text-xs text-gray-400 font-normal">(incl. fees and tax)</span>
             </span>
             <span className="font-mali font-bold text-base sm:text-lg text-[#381A05]">
-              Rs. {grandTotal.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+              {currencySymbol}{grandTotal.toLocaleString("en-US", { minimumFractionDigits: 2 })}
             </span>
           </div>
 

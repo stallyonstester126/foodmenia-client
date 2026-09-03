@@ -20,6 +20,7 @@ export interface SummaryItem {
 
 export interface CheckoutSummary {
   items: SummaryItem[];
+  currency?: string;
   subtotal: number;
   tax: number;
   taxRate?: number;
@@ -68,6 +69,7 @@ function normalizeCheckoutSummary(data: Record<string, unknown> | null | undefin
   }));
 
   const totals = (data.totals as Record<string, unknown>) || {};
+  const rawCurrency = String(data.currency || totals.currency || "$");
   const subtotal = Number(totals.subtotal ?? data.subtotal ?? 0);
   const tax = Number(totals.tax_amount ?? totals.tax ?? data.tax ?? 0);
   const taxRate = Number(totals.tax_rate ?? data.taxRate ?? 0);
@@ -80,6 +82,7 @@ function normalizeCheckoutSummary(data: Record<string, unknown> | null | undefin
 
   return {
     items,
+    currency: rawCurrency,
     subtotal,
     tax,
     taxRate,
@@ -233,15 +236,17 @@ export const useCheckoutStore = create<CheckoutState>((set, get) => ({
 
     try {
       const numericAddressId = Number(selectedAddressId);
-      const numericPaymentId = paymentMethodId ? Number(paymentMethodId) : null;
+      const isCod = !paymentMethodId || paymentMethodId === "cod" || paymentMethodId === "cash";
+      const numericPaymentId = !isCod && paymentMethodId ? Number(paymentMethodId) : null;
+      const sentPaymentMethod = isCod ? "cod" : (numericPaymentId && !isNaN(numericPaymentId) ? numericPaymentId : "cod");
 
       const res = await apiClient.post<{ orderId?: string; id?: string }>(
         "/orders",
         {
           address_id: isNaN(numericAddressId) ? null : numericAddressId,
           addressId: isNaN(numericAddressId) ? null : numericAddressId,
-          payment_method_id: numericPaymentId && !isNaN(numericPaymentId) ? numericPaymentId : null,
-          paymentMethodId: numericPaymentId && !isNaN(numericPaymentId) ? numericPaymentId : null,
+          payment_method_id: sentPaymentMethod,
+          paymentMethodId: sentPaymentMethod,
           fulfillment_type: fulfillmentType,
           fulfillmentType,
           delivery_instructions: deliveryInstructions,

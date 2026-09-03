@@ -17,6 +17,7 @@ export interface PastOrder {
   status: string;
   createdAt: string;
   total: number;
+  currency?: string;
   itemsCount: number;
   itemSummary: string;
 }
@@ -102,6 +103,7 @@ export function usePastOrders() {
           status: statusUpper,
           createdAt: formattedDate,
           total: Number(item.total ?? 0),
+          currency: String(item.currency || "$"),
           itemsCount: Number(item.total_items ?? item.itemsCount ?? 1),
           itemSummary: String(item.summary_items || item.itemSummary || "Order items"),
         };

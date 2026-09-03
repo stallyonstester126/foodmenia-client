@@ -27,6 +27,7 @@ export interface CartData {
   fulfillmentType?: "delivery" | "pickup";
   deliveryEstimate?: string;
   items: CartItem[];
+  currency?: string;
   subtotal: number;
   deliveryFee: number;
   platformFee: number;
@@ -156,6 +157,7 @@ function normalizeCartResponse(data: Record<string, unknown> | null | undefined)
   const platformFee = Number(totals.platform_fee ?? data.platformFee ?? 19.99);
   const grandTotal = Number(totals.total ?? data.grandTotal ?? (subtotal + deliveryFee + platformFee));
   const restaurantObj = (data.restaurant as Record<string, unknown>) || {};
+  const currency = String(data.currency || totals.currency || restaurantObj.currency || "$");
 
   return {
     id: String(data.id || ""),
@@ -166,6 +168,7 @@ function normalizeCartResponse(data: Record<string, unknown> | null | undefined)
     fulfillmentType: (data.fulfillment_type || data.fulfillmentType || "delivery") as "delivery" | "pickup",
     deliveryEstimate: String(data.delivery_estimate || data.deliveryEstimate || "20-35 min"),
     items,
+    currency,
     subtotal,
     deliveryFee,
     platformFee,

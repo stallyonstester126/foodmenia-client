@@ -20,6 +20,7 @@ export interface Restaurant {
   image?: string;
   isFavorite?: boolean;
   type?: "restaurant" | "shop";
+  currency?: string;
 }
 
 export interface MenuItemAddonOption {
@@ -42,6 +43,7 @@ export interface MenuItem {
   name: string;
   description?: string;
   price: number;
+  currency?: string;
   image?: string;
   category?: string;
   isPopular?: boolean;
@@ -134,6 +136,7 @@ export function useRestaurants(params?: {
           cuisine?: string;
           type?: "restaurant" | "shop";
           isFavorite?: boolean;
+          currency?: string;
         }
 
         let rawList: ApiRestaurant[] = [];
@@ -168,6 +171,7 @@ export function useRestaurants(params?: {
           image: r.profile_image_url || r.profileImageUrl || r.cover_image_url || r.coverImageUrl || r.image || (r.type === "shop" ? "/shophero.png" : "/ResturantHero.png"),
           type: r.type || "restaurant",
           isFavorite: r.isFavorite || false,
+          currency: r.currency || "USD ($)",
         }));
       } catch {
         if (params?.type === "shop") {
@@ -250,6 +254,7 @@ export function useRestaurantDetail(id: string) {
           profileImageUrl: profileImageUrl || null,
           coverImageUrl: coverImageUrl || null,
           image: coverImageUrl || profileImageUrl || String(res.image || "/ResturantHero.png"),
+          currency: String(res.currency || "USD ($)"),
         };
       } catch {
         return {
@@ -293,6 +298,7 @@ export function useRestaurantMenu(restaurantId: string, category?: string) {
           image: String(item.image_url || item.image || "/item1.png"),
           category: String(item.category_name || item.category || "Popular"),
           isPopular: Boolean(item.isPopular ?? true),
+          currency: String(item.currency || (res as Record<string, unknown>)?.currency || "USD ($)"),
         }));
       } catch {
         return [

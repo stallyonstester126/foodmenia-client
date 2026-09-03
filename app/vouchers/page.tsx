@@ -40,10 +40,10 @@ export default function VouchersPage() {
                       {voucher.code}
                     </span>
                     <span className="font-poppins text-xs text-gray-500 mt-1">
-                      {voucher.description || `Get ${voucher.discountAmount}${voucher.discountType === "percent" ? "%" : " Rs."} OFF`}
+                      {voucher.description || `Get ${voucher.discountType === "percent" ? `${voucher.discountAmount}%` : `$${voucher.discountAmount}`} OFF`}
                     </span>
                     <span className="font-poppins text-[10px] text-gray-400 mt-1">
-                      Min spend: Rs. {voucher.minSpend}
+                      Min spend: {voucher.minSpend ? `$${voucher.minSpend}` : "None"}
                     </span>
                   </div>
                   <button

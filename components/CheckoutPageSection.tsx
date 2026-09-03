@@ -9,6 +9,7 @@ import AddCardForm from "@/components/payment/AddCardForm";
 import AddressMapModal from "@/components/map/AddressMapModal";
 import { useCheckoutStore } from "@/lib/checkoutStore";
 import { useCartStore } from "@/lib/cartStore";
+import { getCurrencySymbol } from "@/lib/formatters";
 
 export default function CheckoutPageSection() {
   const router = useRouter();
@@ -32,6 +33,7 @@ export default function CheckoutPageSection() {
   } = useCheckoutStore();
 
   const [inputVoucher, setInputVoucher] = useState("");
+  const [paymentType, setPaymentType] = useState<"cod" | "card">("cod");
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<string | null>(null);
   const [showAddCardForm, setShowAddCardForm] = useState(false);
   const [showMapModal, setShowMapModal] = useState(false);
@@ -49,6 +51,7 @@ export default function CheckoutPageSection() {
     : "B1234 Maple Street, Austin, TX 78701, USA";
 
   const summaryItems = summary?.items || [];
+  const currencySymbol = getCurrencySymbol(summary?.currency);
 
   const subtotal = summary?.subtotal || 0;
   const tax = summary?.tax || 0;
@@ -64,10 +67,21 @@ export default function CheckoutPageSection() {
     await applyVoucher(inputVoucher.trim());
   };
 
-  const handlePlaceOrder = async () => {
+  const handlePlaceOrder = async (overrideType?: "cod" | "card" | unknown) => {
     setPlaceOrderError(null);
+    const activeType = typeof overrideType === "string" ? overrideType : paymentType;
+
+    let methodToSend = "cod";
+    if (activeType === "card") {
+      if (!selectedPaymentMethodId) {
+        setPlaceOrderError("Please select or add a payment card, or choose Cash on Delivery.");
+        return;
+      }
+      methodToSend = selectedPaymentMethodId;
+    }
+
     const result = await placeOrder({
-      paymentMethodId: selectedPaymentMethodId,
+      paymentMethodId: methodToSend,
       fulfillmentType: "delivery",
     });
 
@@ -206,35 +220,119 @@ export default function CheckoutPageSection() {
             <h2 className="font-mali uppercase text-[24px] sm:text-[28px] font-bold text-[#2B1B0E] tracking-tight">
               PAYMENT METHOD
             </h2>
-            <button
-              type="button"
-              onClick={() => setShowAddCardForm(!showAddCardForm)}
-              className="bg-[#FCBA08] hover:bg-[#e5a807] text-[#2B1B0E] font-poppins font-bold text-xs px-4 py-2 rounded-xl shadow-sm hover:scale-[1.02] active:scale-95 transition-all focus:outline-none flex items-center gap-1.5"
-            >
-              <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              <span>{showAddCardForm ? "Close Form" : "Add new card"}</span>
-            </button>
+            {paymentType === "card" && (
+              <button
+                type="button"
+                onClick={() => setShowAddCardForm(!showAddCardForm)}
+                className="bg-[#FCBA08] hover:bg-[#e5a807] text-[#2B1B0E] font-poppins font-bold text-xs px-4 py-2 rounded-xl shadow-sm hover:scale-[1.02] active:scale-95 transition-all focus:outline-none flex items-center gap-1.5"
+              >
+                <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                <span>{showAddCardForm ? "Close Form" : "Add new card"}</span>
+              </button>
+            )}
           </div>
 
-          {/* Saved Stripe Cards List */}
-          <SavedCardsList
-            selectedCardId={selectedPaymentMethodId}
-            onSelectCard={(id) => setSelectedPaymentMethodId(id)}
-            refreshTrigger={refreshCardsTrigger}
-          />
-
-          {/* Inline Add Card Form */}
-          {showAddCardForm && (
-            <AddCardForm
-              onCardAdded={(newId) => {
-                setSelectedPaymentMethodId(newId);
-                setShowAddCardForm(false);
-                setRefreshCardsTrigger((prev) => prev + 1);
+          {/* Payment Type Selection Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            {/* Cash on Delivery */}
+            <div
+              onClick={() => {
+                setPaymentType("cod");
+                setPlaceOrderError(null);
               }}
-              onCancel={() => setShowAddCardForm(false)}
-            />
+              className={`rounded-[20px] border p-4 sm:p-5 flex items-start gap-3.5 cursor-pointer transition-all ${
+                paymentType === "cod"
+                  ? "border-[#FCBA08] bg-amber-50/50 ring-2 ring-[#FCBA08]/40 shadow-sm"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              }`}
+            >
+              <div
+                className={`w-5 h-5 mt-0.5 rounded-full border-2 flex items-center justify-center transition-all ${
+                  paymentType === "cod" ? "border-[#FCBA08] bg-[#FCBA08]" : "border-gray-300"
+                }`}
+              >
+                {paymentType === "cod" && <div className="w-2 h-2 rounded-full bg-[#2B1B0E]" />}
+              </div>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">💵</span>
+                  <span className="font-poppins font-bold text-sm text-[#1A1A1A]">
+                    Cash on Delivery
+                  </span>
+                  <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full font-poppins">
+                    RECOMMENDED
+                  </span>
+                </div>
+                <p className="font-poppins text-xs text-gray-500 leading-relaxed">
+                  Pay in cash when your order arrives. Instant confirmation, no minimum order.
+                </p>
+              </div>
+            </div>
+
+            {/* Credit / Debit Card */}
+            <div
+              onClick={() => {
+                setPaymentType("card");
+                setPlaceOrderError(null);
+              }}
+              className={`rounded-[20px] border p-4 sm:p-5 flex items-start gap-3.5 cursor-pointer transition-all ${
+                paymentType === "card"
+                  ? "border-[#FCBA08] bg-amber-50/50 ring-2 ring-[#FCBA08]/40 shadow-sm"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              }`}
+            >
+              <div
+                className={`w-5 h-5 mt-0.5 rounded-full border-2 flex items-center justify-center transition-all ${
+                  paymentType === "card" ? "border-[#FCBA08] bg-[#FCBA08]" : "border-gray-300"
+                }`}
+              >
+                {paymentType === "card" && <div className="w-2 h-2 rounded-full bg-[#2B1B0E]" />}
+              </div>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">💳</span>
+                  <span className="font-poppins font-bold text-sm text-[#1A1A1A]">
+                    Credit / Debit Card
+                  </span>
+                </div>
+                <p className="font-poppins text-xs text-gray-500 leading-relaxed">
+                  Pay online securely with Visa, MasterCard, or American Express.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Sub-view for Credit Card: Saved Cards List & Add Form */}
+          {paymentType === "card" && (
+            <div className="flex flex-col gap-4 pt-1 animate-in fade-in duration-200">
+              {grandTotal > 0 && ((currencySymbol.includes("Rs") && grandTotal < 120) || (currencySymbol === "$" && grandTotal < 0.50)) && (
+                <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs font-poppins text-amber-900 flex items-start gap-2.5">
+                  <span className="text-base">ℹ️</span>
+                  <div>
+                    <strong>Online Card Gateway Minimum:</strong> Online card processing requires a minimum order of <strong>{currencySymbol === "$" ? "$0.50" : "Rs. 120"}</strong>. For your current order ({currencySymbol}{grandTotal.toFixed(2)}), we recommend choosing <strong>Cash on Delivery</strong>.
+                  </div>
+                </div>
+              )}
+
+              <SavedCardsList
+                selectedCardId={selectedPaymentMethodId}
+                onSelectCard={(id) => setSelectedPaymentMethodId(id)}
+                refreshTrigger={refreshCardsTrigger}
+              />
+
+              {showAddCardForm && (
+                <AddCardForm
+                  onCardAdded={(newId) => {
+                    setSelectedPaymentMethodId(newId);
+                    setShowAddCardForm(false);
+                    setRefreshCardsTrigger((prev) => prev + 1);
+                  }}
+                  onCancel={() => setShowAddCardForm(false)}
+                />
+              )}
+            </div>
           )}
         </div>
 
@@ -305,7 +403,7 @@ export default function CheckoutPageSection() {
                     {item.qty}x {item.name}
                   </span>
                   <span className="font-semibold text-[#1A1A1A]">
-                    Rs. {item.price.toFixed(2)}
+                    {currencySymbol}{item.price.toFixed(2)}
                   </span>
                 </div>
               ))}
@@ -315,23 +413,23 @@ export default function CheckoutPageSection() {
             <div className="w-full bg-[#FCBA08] rounded-[20px] p-6 text-[#2B1B0E] flex flex-col gap-3 shadow-sm mt-2">
               <div className="flex items-center justify-between font-poppins text-sm sm:text-base font-semibold">
                 <span>Subtotal</span>
-                <span>Rs. {subtotal.toFixed(2)}</span>
+                <span>{currencySymbol}{subtotal.toFixed(2)}</span>
               </div>
 
               <div className="flex items-center justify-between font-poppins text-xs sm:text-sm">
                 <span>Standard delivery</span>
-                <span className="font-medium">{deliveryFee === 0 ? "Free" : `Rs. ${deliveryFee.toFixed(2)}`}</span>
+                <span className="font-medium">{deliveryFee === 0 ? "Free" : `${currencySymbol}${deliveryFee.toFixed(2)}`}</span>
               </div>
 
               <div className="flex items-center justify-between font-poppins text-xs sm:text-sm">
                 <span>Platform Fee</span>
-                <span className="font-medium">Rs. {platformFee.toFixed(2)}</span>
+                <span className="font-medium">{currencySymbol}{platformFee.toFixed(2)}</span>
               </div>
 
               {tax > 0 && (
                 <div className="flex items-center justify-between font-poppins text-xs sm:text-sm">
                   <span>Estimated Tax {taxRate > 0 ? `(${taxRate}%)` : ""}</span>
-                  <span className="font-medium">Rs. {tax.toFixed(2)}</span>
+                  <span className="font-medium">{currencySymbol}{tax.toFixed(2)}</span>
                 </div>
               )}
 
@@ -339,12 +437,12 @@ export default function CheckoutPageSection() {
                 <>
                   <div className="flex items-center justify-between font-poppins text-xs sm:text-sm font-extrabold pt-2 border-t border-[#2B1B0E]/20">
                     <span>Total before discount</span>
-                    <span>Rs. {totalBeforeDiscount.toFixed(2)}</span>
+                    <span>{currencySymbol}{totalBeforeDiscount.toFixed(2)}</span>
                   </div>
 
                   <div className="flex items-center justify-between font-poppins text-xs sm:text-sm text-emerald-950 font-extrabold">
                     <span>Voucher Discount</span>
-                    <span>- Rs. {discount.toFixed(2)}</span>
+                    <span>- {currencySymbol}{discount.toFixed(2)}</span>
                   </div>
 
                   <div className="w-full border-t border-[#2B1B0E]/30 my-1" />
@@ -352,7 +450,7 @@ export default function CheckoutPageSection() {
                   <div className="flex items-center justify-between font-poppins font-bold text-sm sm:text-base">
                     <span>Total <span className="text-xs text-[#2B1B0E]/70 font-normal">(incl. fees and tax)</span></span>
                     <span className="font-mali text-lg sm:text-xl text-[#381A05]">
-                      Rs. {grandTotal.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      {currencySymbol}{grandTotal.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </>
@@ -363,7 +461,7 @@ export default function CheckoutPageSection() {
                   <div className="flex items-center justify-between font-poppins font-bold text-sm sm:text-base">
                     <span>Total <span className="text-xs text-[#2B1B0E]/70 font-normal">(incl. fees and tax)</span></span>
                     <span className="font-mali text-lg sm:text-xl text-[#381A05]">
-                      Rs. {grandTotal.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      {currencySymbol}{grandTotal.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </>
@@ -371,8 +469,24 @@ export default function CheckoutPageSection() {
             </div>
 
             {placeOrderError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm font-poppins p-3.5 rounded-xl font-medium">
-                ⚠️ {placeOrderError}
+              <div className="bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm font-poppins p-4 rounded-xl flex flex-col gap-2.5">
+                <div className="flex items-start gap-2 font-medium">
+                  <span className="text-base flex-shrink-0">⚠️</span>
+                  <span>{placeOrderError}</span>
+                </div>
+                {paymentType === "card" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentType("cod");
+                      handlePlaceOrder("cod");
+                    }}
+                    className="self-start mt-1 bg-[#2B1B0E] hover:bg-black text-[#FCBA08] font-poppins font-bold text-xs px-4 py-2 rounded-lg transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>💵</span>
+                    <span>Switch to Cash on Delivery &amp; Place Order</span>
+                  </button>
+                )}
               </div>
             )}
 

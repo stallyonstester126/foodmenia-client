@@ -1,12 +1,34 @@
 import { toCents, fromCents } from "./money";
 
 /**
- * Format currency decimal or cents into standard "Rs. XX.XX" string
+ * Extracts a clean symbol from any currency string
+ * (e.g. "USD ($)" -> "$", "EUR (€)" -> "€", "PKR (Rs.)" -> "Rs. ", "Rs." -> "Rs. ", "$" -> "$")
  */
-export function formatPrice(amountInDecimalOrCents: number | string, isCents = false): string {
+export function getCurrencySymbol(rawCurrency?: string | null): string {
+  if (!rawCurrency) return "$";
+  const s = rawCurrency.trim();
+  if (s.includes("$")) return "$";
+  if (s.includes("£")) return "£";
+  if (s.includes("€")) return "€";
+  if (s.toLowerCase().includes("rs") || s.toLowerCase().includes("pkr")) return "Rs. ";
+  if (s.toUpperCase().includes("AED")) return "AED ";
+  if (s.toUpperCase().includes("SAR")) return "SAR ";
+  if (s.toUpperCase().includes("CAD")) return "CA$";
+  return s.endsWith(" ") ? s : `${s} `;
+}
+
+/**
+ * Format currency decimal or cents into standard string
+ */
+export function formatPrice(
+  amountInDecimalOrCents: number | string,
+  isCents = false,
+  rawCurrency = "$"
+): string {
   const cents = isCents ? Number(amountInDecimalOrCents) : toCents(amountInDecimalOrCents);
   const decimal = fromCents(cents);
-  return `$${decimal.toFixed(2)}`;
+  const symbol = getCurrencySymbol(rawCurrency);
+  return `${symbol}${decimal.toFixed(2)}`;
 }
 
 /**

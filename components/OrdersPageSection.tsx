@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import { usePastOrders } from "@/lib/useUserData";
 import { apiClient } from "@/lib/apiClient";
 import { useCartStore } from "@/lib/cartStore";
+import { getCurrencySymbol } from "@/lib/formatters";
 
 export default function OrdersPageSection() {
   const router = useRouter();
@@ -148,7 +149,7 @@ export default function OrdersPageSection() {
 
                           <div className="sm:col-span-2 sm:text-right">
                             <span className="font-poppins font-bold text-base text-[#1A1A1A]">
-                              Rs. {order.total.toFixed(2)}
+                              {getCurrencySymbol(order.currency)}{order.total.toFixed(2)}
                             </span>
                           </div>
                         </div>
@@ -216,7 +217,7 @@ export default function OrdersPageSection() {
 
                           <div className="sm:col-span-2 sm:text-right">
                             <span className="font-poppins font-bold text-base text-[#1A1A1A]">
-                              Rs. {order.total.toFixed(2)}
+                              {getCurrencySymbol(order.currency)}{order.total.toFixed(2)}
                             </span>
                           </div>
                         </div>

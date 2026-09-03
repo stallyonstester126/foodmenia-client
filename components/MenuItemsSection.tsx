@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRestaurantMenu } from "@/lib/useRestaurantData";
 import { useCartStore } from "@/lib/cartStore";
+import { getCurrencySymbol } from "@/lib/formatters";
 
 export default function MenuItemsSection({ restaurantId = "1" }: { restaurantId?: string }) {
   const [activeCategory, setActiveCategory] = useState("Popular");
@@ -137,7 +138,7 @@ export default function MenuItemsSection({ restaurantId = "1" }: { restaurantId?
                           {item.name}
                         </h3>
                         <span className="font-poppins text-sm sm:text-base font-extrabold text-[#1A1A1A] mt-0.5">
-                          Rs. {itemPrice.toFixed(2)}
+                          {getCurrencySymbol(item.currency)}{itemPrice.toFixed(2)}
                         </span>
                       </div>
 

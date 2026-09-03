@@ -8,6 +8,7 @@ import { useMenuItemDetail, useRestaurantMenu, useRestaurantDetail } from "@/lib
 import { useCartStore } from "@/lib/cartStore";
 import CartConflictModal from "@/components/cart/CartConflictModal";
 import { toCents, fromCents } from "@/lib/money";
+import { getCurrencySymbol } from "@/lib/formatters";
 
 interface ProductDetailProps {
   itemId?: string;
@@ -78,6 +79,7 @@ export default function ProductDetailSection({
   const unitPriceCents = basePriceCents + addonsTotalCents + freqTotalCents;
   const totalPriceCents = unitPriceCents * quantity;
   const totalPrice = fromCents(totalPriceCents);
+  const currencySymbol = getCurrencySymbol(itemData?.currency || restaurantData?.currency);
 
   const incrementQty = () => setQuantity((prev) => prev + 1);
   const decrementQty = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
@@ -214,7 +216,7 @@ export default function ProductDetailSection({
               </h1>
               <div className="flex items-center gap-3 font-poppins">
                 <span className="text-[#2B1B0E] font-extrabold text-base sm:text-lg">
-                  from Rs. {basePrice.toFixed(2)}
+                  from {currencySymbol}{basePrice.toFixed(2)}
                 </span>
                 <span className="text-gray-400 text-xs font-medium bg-gray-100 px-2.5 py-0.5 rounded-full">
                   Single serving
@@ -261,7 +263,7 @@ export default function ProductDetailSection({
                         </span>
                         <div className="flex items-center gap-3">
                           <span className="font-poppins text-xs text-gray-500 font-medium">
-                            + Rs. {opt.price.toFixed(2)}
+                            + {currencySymbol}{opt.price.toFixed(2)}
                           </span>
                           <div
                             className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
@@ -320,7 +322,7 @@ export default function ProductDetailSection({
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="font-poppins text-xs font-bold text-gray-600">
-                          + Rs. {item.price.toFixed(2)}
+                          + {currencySymbol}{item.price.toFixed(2)}
                         </span>
                         <div
                           className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
@@ -466,7 +468,7 @@ export default function ProductDetailSection({
               >
                 <span>Add to cart</span>
                 <span className="bg-[#2B1B0E] text-[#FCBA08] text-xs px-2.5 py-1 rounded-lg">
-                  Rs. {totalPrice.toFixed(2)}
+                  {currencySymbol}{totalPrice.toFixed(2)}
                 </span>
               </button>
             </div>
@@ -512,7 +514,7 @@ export default function ProductDetailSection({
                         {item.name}
                       </span>
                       <span className="font-poppins text-sm sm:text-base font-bold text-[#1A1A1A]">
-                        Rs. {typeof item.price === "number" ? item.price.toFixed(2) : item.price}
+                        {currencySymbol}{typeof item.price === "number" ? item.price.toFixed(2) : item.price}
                       </span>
                     </div>
 
