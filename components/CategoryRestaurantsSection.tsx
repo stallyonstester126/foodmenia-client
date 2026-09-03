@@ -322,56 +322,29 @@ export default function CategoryRestaurantsSection({
 
       {/* Main Container */}
       <div className="relative z-10 w-full max-w-[1196px] mx-auto px-6 sm:px-10 lg:px-12">
-        {/* Interactive Category Filter Pills with Scroll Controls and Visible Scrollbar */}
-        <div className="mb-10 sm:mb-12 flex flex-col gap-3">
+        {/* Interactive Category Filter Pills (Wrapped cleanly across rows, no scrollbar, elegant spacing) */}
+        <div className="pt-2 sm:pt-4 mb-10 sm:mb-14 flex flex-col gap-3.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h3 className="font-poppins text-xs font-bold uppercase tracking-wider text-gray-400">
+            <div className="flex items-center gap-2.5">
+              <span className="w-2 h-2 rounded-full bg-[#FCBA08]" />
+              <h3 className="font-poppins text-xs font-bold uppercase tracking-wider text-gray-500">
                 Filter By Category
               </h3>
-              {/* Scroll buttons for quick horizontal navigation */}
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const el = document.getElementById("categories-filter-scroll-container");
-                    if (el) el.scrollBy({ left: -220, behavior: "smooth" });
-                  }}
-                  aria-label="Scroll categories left"
-                  className="w-6 h-6 rounded-full bg-gray-100 hover:bg-[#FCBA08] text-[#2B1B0E] flex items-center justify-center text-xs font-bold transition-all shadow-2xs hover:scale-105 active:scale-95"
-                >
-                  ‹
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const el = document.getElementById("categories-filter-scroll-container");
-                    if (el) el.scrollBy({ left: 220, behavior: "smooth" });
-                  }}
-                  aria-label="Scroll categories right"
-                  className="w-6 h-6 rounded-full bg-gray-100 hover:bg-[#FCBA08] text-[#2B1B0E] flex items-center justify-center text-xs font-bold transition-all shadow-2xs hover:scale-105 active:scale-95"
-                >
-                  ›
-                </button>
-              </div>
             </div>
 
             {selectedCategory !== "ALL" && (
               <button
                 type="button"
                 onClick={() => setSelectedCategory("ALL")}
-                className="text-xs font-poppins font-semibold text-[#FCBA08] hover:underline"
+                className="text-xs font-poppins font-semibold text-[#FCBA08] hover:text-[#2B1B0E] hover:underline cursor-pointer transition-colors"
               >
                 Clear filter (Show All)
               </button>
             )}
           </div>
 
-          {/* Visible, smooth horizontal scrollbar container */}
-          <div
-            id="categories-filter-scroll-container"
-            className="flex items-center gap-2 sm:gap-3 overflow-x-auto scroll-smooth pb-3 pt-1 [scrollbar-width:thin] [scrollbar-color:#FCBA08_#F3F4F6] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#FCBA08] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#e5a807]"
-          >
+          {/* Clean wrapped category pills without single-line overflow or ugly horizontal scrollbar */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-1">
             {availableCategories.map((cat) => {
               const isSelected = selectedCategory === cat.id;
               const count =
@@ -384,20 +357,22 @@ export default function CategoryRestaurantsSection({
                   key={cat.id}
                   type="button"
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2.5 rounded-full font-poppins text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all duration-200 border cursor-pointer ${
+                  className={`px-4 py-2.5 rounded-full font-poppins text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all duration-200 border cursor-pointer ${
                     isSelected
-                      ? "bg-[#2B1B0E] text-[#FCBA08] border-[#2B1B0E] shadow-sm scale-105"
-                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                      ? "bg-[#2B1B0E] text-[#FCBA08] border-[#2B1B0E] shadow-sm scale-102"
+                      : "bg-white text-gray-700 border-gray-200 hover:bg-amber-50/50 hover:border-[#FCBA08]/50"
                   }`}
                 >
                   <span>{cat.label}</span>
-                  <span
-                    className={`text-[11px] px-1.5 py-0.2 rounded-full font-bold ${
-                      isSelected ? "bg-[#FCBA08]/20 text-[#FCBA08]" : "bg-gray-100 text-gray-500"
-                    }`}
-                  >
-                    {count}
-                  </span>
+                  {count > 0 && (
+                    <span
+                      className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
+                        isSelected ? "bg-[#FCBA08]/20 text-[#FCBA08]" : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  )}
                 </button>
               );
             })}
