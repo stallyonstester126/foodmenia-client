@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRestaurants, Restaurant } from "@/lib/useRestaurantData";
@@ -54,12 +54,17 @@ function CategoryRow({ title, items, isLoading, type }: CategoryRowProps) {
         />
       </div>
 
-      {/* Category Heading */}
-      <h2 className="font-mali uppercase text-[28px] sm:text-[32px] md:text-[36px] font-bold text-[#2B1B0E] tracking-tight select-none z-10">
-        {title}
-      </h2>
+      {/* Category Heading with Item Count */}
+      <div className="flex items-center justify-between z-10">
+        <h2 className="font-mali uppercase text-[24px] sm:text-[28px] md:text-[32px] font-bold text-[#2B1B0E] tracking-tight select-none">
+          {title}
+        </h2>
+        <span className="font-poppins text-xs font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+          {items.length} {type === "shop" ? (items.length === 1 ? "shop" : "shops") : (items.length === 1 ? "venue" : "venues")}
+        </span>
+      </div>
 
-      {/* 2-Card Horizontal Scroll Slider (Shows 2 cards at a time on desktop, scroll for all) */}
+      {/* 2-Card Horizontal Scroll Slider */}
       <div
         ref={scrollRef}
         className="flex gap-6 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory py-2 relative z-10 scroll-smooth"
@@ -83,7 +88,7 @@ function CategoryRow({ title, items, isLoading, type }: CategoryRowProps) {
                   {/* Card Image */}
                   <div className="relative w-full aspect-[16/10] bg-gray-50 overflow-hidden rounded-t-[19px] sm:rounded-t-[23px]">
                     <Image
-                      src={item.image || "/ResturantHero.png"}
+                      src={item.image || (type === "shop" ? "/shophero.png" : "/ResturantHero.png")}
                       alt={item.name}
                       fill
                       sizes="(max-width: 768px) 100vw, 50vw"
@@ -106,9 +111,16 @@ function CategoryRow({ title, items, isLoading, type }: CategoryRowProps) {
                       </div>
                     </div>
 
-                    <p className="font-poppins text-xs sm:text-[13px] text-gray-500 font-normal">
-                      {item.cuisine || "$ · Fast Food"}
+                    <p className="font-poppins text-xs sm:text-[13px] text-gray-500 font-normal truncate">
+                      {item.cuisine || (type === "shop" ? "Grocery & Bakery" : "Fast Food · Local Specialty")}
                     </p>
+
+                    <div className="mt-2 flex items-center gap-1.5 text-gray-400 text-xs font-poppins">
+                      <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span>{item.deliveryTime || "20-35 mins"} · Free Delivery</span>
+                    </div>
                   </div>
                 </Link>
               </div>
@@ -116,24 +128,26 @@ function CategoryRow({ title, items, isLoading, type }: CategoryRowProps) {
       </div>
 
       {/* Big Centered Arrow Controls Below Cards */}
-      <div className="flex items-center justify-center gap-4 mt-4 select-none z-10">
-        <button
-          type="button"
-          onClick={() => handleScroll("left")}
-          aria-label="Scroll left"
-          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#FFF3D4] hover:bg-[#FCBA08] text-[#2B1B0E] flex items-center justify-center font-bold text-2xl sm:text-3xl shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer border border-[#FCBA08]/30 focus:outline-none"
-        >
-          ‹
-        </button>
-        <button
-          type="button"
-          onClick={() => handleScroll("right")}
-          aria-label="Scroll right"
-          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#FFF3D4] hover:bg-[#FCBA08] text-[#2B1B0E] flex items-center justify-center font-bold text-2xl sm:text-3xl shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer border border-[#FCBA08]/30 focus:outline-none"
-        >
-          ›
-        </button>
-      </div>
+      {items.length > 2 && (
+        <div className="flex items-center justify-center gap-4 mt-2 select-none z-10">
+          <button
+            type="button"
+            onClick={() => handleScroll("left")}
+            aria-label="Scroll left"
+            className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#FFF3D4] hover:bg-[#FCBA08] text-[#2B1B0E] flex items-center justify-center font-bold text-2xl shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer border border-[#FCBA08]/30 focus:outline-none"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            onClick={() => handleScroll("right")}
+            aria-label="Scroll right"
+            className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#FFF3D4] hover:bg-[#FCBA08] text-[#2B1B0E] flex items-center justify-center font-bold text-2xl shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer border border-[#FCBA08]/30 focus:outline-none"
+          >
+            ›
+          </button>
+        </div>
+      )}
 
       {/* Section Divider: ○ ○ 🦥 ● ● */}
       <div className="flex items-center justify-center gap-2 sm:gap-2.5 mt-6 sm:mt-8 select-none z-10">
@@ -160,19 +174,101 @@ function CategoryRow({ title, items, isLoading, type }: CategoryRowProps) {
 export default function CategoryRestaurantsSection({
   type = "restaurant",
 }: CategoryRestaurantsSectionProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const { data: restaurants, isLoading } = useRestaurants({ type });
-
-  const categoryTitles =
-    type === "shop"
-      ? ["GROCERY", "BAKERY", "CONVENIENCE", "SUPERMARKET"]
-      : ["CHINESE", "ITALIAN", "DESSERTS", "FAST FOOD"];
 
   const rawList = Array.isArray(restaurants)
     ? restaurants
     : (restaurants as unknown as { restaurants?: typeof restaurants; data?: typeof restaurants })?.restaurants ||
       (restaurants as unknown as { restaurants?: typeof restaurants; data?: typeof restaurants })?.data ||
       [];
-  const typedList = rawList.filter((r) => !r.type || r.type === type);
+
+  // Strict type segregation: only restaurant on /restaurant, only shop on /shop
+  const typedList = rawList.filter((r) => r.type === type);
+
+  // Curated category lists per type
+  const availableCategories =
+    type === "shop"
+      ? [
+          { id: "ALL", label: "All Shops", icon: "🛒" },
+          { id: "SUPERMARKET", label: "Supermarket", icon: "🏬" },
+          { id: "BAKERY", label: "Bakery & Bread", icon: "🥐" },
+          { id: "GROCERY", label: "Grocery & Staples", icon: "🌾" },
+          { id: "FRESH PRODUCE", label: "Fresh Produce", icon: "🥦" },
+          { id: "SNACKS & DRINKS", label: "Snacks & Drinks", icon: "🍿" },
+        ]
+      : [
+          { id: "ALL", label: "All Categories", icon: "🍽️" },
+          { id: "FAST FOOD", label: "Fast Food", icon: "🍔" },
+          { id: "DESI & BBQ", label: "Desi & BBQ", icon: "🍛" },
+          { id: "CHINESE", label: "Chinese & Asian", icon: "🥢" },
+          { id: "ITALIAN", label: "Italian & Pizza", icon: "🍕" },
+          { id: "BEVERAGES", label: "Beverages & Cafe", icon: "🥤" },
+          { id: "DESSERTS", label: "Desserts & Sweets", icon: "🍰" },
+        ];
+
+  // Helper to determine if an item strictly belongs to a category
+  const matchesCategory = (categoryId: string, item: Restaurant) => {
+    if (item.type !== type) return false;
+    if (categoryId === "ALL") return true;
+
+    const haystack = `${item.name} ${item.cuisine || ""}`.toUpperCase();
+
+    const keywordMap: Record<string, string[]> = {
+      "FAST FOOD": ["FAST FOOD", "BURGER", "PIZZA", "SANDWICH", "SHAWARMA", "WRAP", "FRIES"],
+      "DESI & BBQ": ["DESI", "PAKISTANI", "BIRYANI", "BBQ", "GRILL", "KARAHI", "TIKKA", "HANDI"],
+      "CHINESE": ["CHINESE", "ASIAN", "NOODLE", "DUMPLING", "CHOW MEIN"],
+      "ITALIAN": ["ITALIAN", "PASTA", "PIZZA", "SPAGHETTI"],
+      "BEVERAGES": ["BEVERAGE", "DRINK", "SHAKE", "JUICE", "COFFEE", "TEA", "CAFE"],
+      "DESSERTS": ["DESSERT", "SWEET", "CAKE", "ICE CREAM", "WAFFLE"],
+      "SUPERMARKET": ["SUPERMARKET", "MART", "HYPERMARKET", "STORE"],
+      "BAKERY": ["BAKERY", "BREAD", "BUN", "PASTRY", "CROISSANT"],
+      "GROCERY": ["GROCERY", "STAPLE", "MART"],
+      "FRESH PRODUCE": ["FRESH PRODUCE", "PRODUCE", "FRUIT", "VEGETABLE"],
+      "SNACKS & DRINKS": ["SNACK", "CHIP", "DRINK", "BEVERAGE", "JUICE", "SODA"],
+    };
+
+    const keywords = keywordMap[categoryId] || [categoryId];
+    return keywords.some((kw) => haystack.includes(kw));
+  };
+
+  // Determine which sections to render
+  const categorySectionsToRender = (() => {
+    if (selectedCategory !== "ALL") {
+      const filtered = typedList.filter((item) => matchesCategory(selectedCategory, item));
+      const activeMeta = availableCategories.find((c) => c.id === selectedCategory);
+      return [
+        {
+          title: activeMeta ? `${activeMeta.icon} ${activeMeta.label.toUpperCase()}` : selectedCategory,
+          items: filtered,
+        },
+      ];
+    }
+
+    // When "ALL": group only categories that ACTUALLY have matching venues
+    const categoryIds = availableCategories.filter((c) => c.id !== "ALL");
+    const activeSections = categoryIds
+      .map((cat) => {
+        const matched = typedList.filter((item) => matchesCategory(cat.id, item));
+        return {
+          title: `${cat.icon} ${cat.label.toUpperCase()}`,
+          items: matched,
+        };
+      })
+      .filter((sec) => sec.items.length > 0);
+
+    // If no individual categories matched (e.g. initial setup), render general section
+    if (activeSections.length === 0 && typedList.length > 0) {
+      return [
+        {
+          title: type === "shop" ? "🛒 ALL SHOPS & MARTS" : "🍔 ALL FEATURED RESTAURANTS",
+          items: typedList,
+        },
+      ];
+    }
+
+    return activeSections;
+  })();
 
   return (
     <section className="relative w-full bg-white overflow-hidden py-10 sm:py-14 lg:py-16">
@@ -194,30 +290,87 @@ export default function CategoryRestaurantsSection({
 
       {/* Main Container */}
       <div className="relative z-10 w-full max-w-[1196px] mx-auto px-6 sm:px-10 lg:px-12">
+        {/* Interactive Category Filter Pills */}
+        <div className="mb-10 sm:mb-12 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h3 className="font-poppins text-xs font-bold uppercase tracking-wider text-gray-400">
+              Filter By Category
+            </h3>
+            {selectedCategory !== "ALL" && (
+              <button
+                type="button"
+                onClick={() => setSelectedCategory("ALL")}
+                className="text-xs font-poppins font-semibold text-[#FCBA08] hover:underline"
+              >
+                Clear filter (Show All)
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1">
+            {availableCategories.map((cat) => {
+              const isSelected = selectedCategory === cat.id;
+              const count =
+                cat.id === "ALL"
+                  ? typedList.length
+                  : typedList.filter((item) => matchesCategory(cat.id, item)).length;
+
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-4 py-2.5 rounded-full font-poppins text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all duration-200 border ${
+                    isSelected
+                      ? "bg-[#2B1B0E] text-[#FCBA08] border-[#2B1B0E] shadow-sm scale-105"
+                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                  }`}
+                >
+                  <span>{cat.icon}</span>
+                  <span>{cat.label}</span>
+                  <span
+                    className={`text-[11px] px-1.5 py-0.2 rounded-full ${
+                      isSelected ? "bg-[#FCBA08]/20 text-[#FCBA08]" : "bg-gray-100 text-gray-500"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Category Sections Rendering */}
         <div className="flex flex-col gap-12 sm:gap-16">
-          {categoryTitles.map((title, groupIdx) => {
-            const matchedItems = typedList.filter(
-              (r) =>
-                r.cuisine?.toUpperCase().includes(title) ||
-                r.name.toUpperCase().includes(title)
-            );
-
-            // Show matched items for this category, or slice full list for rich variety if no exact title match
-            const categoryItems =
-              matchedItems.length > 0
-                ? matchedItems
-                : typedList.slice((groupIdx * 2) % Math.max(1, typedList.length));
-
-            return (
+          {categorySectionsToRender.length === 0 || categorySectionsToRender.every((s) => s.items.length === 0) ? (
+            <div className="w-full bg-gray-50 border border-gray-200 rounded-3xl p-10 flex flex-col items-center justify-center text-center gap-3">
+              <span className="text-4xl">🔍</span>
+              <h3 className="font-mali text-xl font-bold text-[#2B1B0E]">
+                No {type === "shop" ? "shops" : "restaurants"} found in this category
+              </h3>
+              <p className="font-poppins text-xs sm:text-sm text-gray-500 max-w-md">
+                We couldn&apos;t find any {type === "shop" ? "shops" : "restaurants"} matching the selected category.
+              </p>
+              <button
+                type="button"
+                onClick={() => setSelectedCategory("ALL")}
+                className="mt-2 bg-[#FCBA08] text-[#2B1B0E] font-poppins font-bold text-xs px-5 py-2.5 rounded-xl hover:bg-[#e5a807] transition-all shadow-sm"
+              >
+                View All {type === "shop" ? "Shops" : "Restaurants"}
+              </button>
+            </div>
+          ) : (
+            categorySectionsToRender.map((section) => (
               <CategoryRow
-                key={title}
-                title={title}
-                items={categoryItems}
+                key={section.title}
+                title={section.title}
+                items={section.items}
                 isLoading={isLoading}
                 type={type}
               />
-            );
-          })}
+            ))
+          )}
         </div>
       </div>
     </section>

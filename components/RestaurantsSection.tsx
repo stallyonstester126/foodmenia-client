@@ -94,7 +94,7 @@ export default function RestaurantsSection() {
                   (restaurants as unknown as { items?: typeof restaurants; restaurants?: typeof restaurants; data?: typeof restaurants })?.restaurants ||
                   (restaurants as unknown as { items?: typeof restaurants; restaurants?: typeof restaurants; data?: typeof restaurants })?.data ||
                   []
-              ).slice(0, 6).map((item) => (
+              ).filter((item) => !item.type || item.type === "restaurant").slice(0, 6).map((item) => (
                 <div
                   key={item.id}
                   className="rounded-[20px] sm:rounded-[24px] border border-gray-200/90 shadow-[0_2px_16px_rgba(0,0,0,0.04)] overflow-hidden cursor-pointer group flex flex-col bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative"
