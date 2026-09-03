@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { apiClient } from "@/lib/apiClient";
+import { showAlert, showConfirm } from "@/lib/dialogStore";
 
 export interface SavedCard {
   id: string;
@@ -56,7 +57,14 @@ export default function SavedCardsList({
 
   const handleDeleteCard = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm("Are you sure you want to remove this saved card?")) return;
+    const confirmed = await showConfirm({
+      title: "Remove Saved Card?",
+      message: "Are you sure you want to remove this saved payment card?",
+      confirmText: "Remove Card",
+      cancelText: "Keep Card",
+      variant: "danger",
+    });
+    if (!confirmed) return;
 
     setDeletingId(id);
     try {
@@ -71,7 +79,11 @@ export default function SavedCardsList({
       }
     } catch (err) {
       console.error("Error deleting saved card:", err);
-      alert("Failed to delete card. Please try again.");
+      await showAlert({
+        title: "Removal Failed",
+        message: "Failed to delete card. Please try again.",
+        variant: "error",
+      });
     } finally {
       setDeletingId(null);
     }

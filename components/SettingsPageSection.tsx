@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useAuthStore } from "@/lib/authStore";
+import { showAlert, showConfirm } from "@/lib/dialogStore";
 
 export default function SettingsPageSection() {
   const [language] = useState("English");
@@ -127,11 +128,19 @@ export default function SettingsPageSection() {
                 try {
                   const { apiClient } = await import("@/lib/apiClient");
                   await apiClient.post("/auth/change-password", { currentPassword, newPassword });
-                  alert("Password changed successfully!");
+                  await showAlert({
+                    title: "Password Changed",
+                    message: "Your password has been changed successfully!",
+                    variant: "success",
+                  });
                   form.reset();
                 } catch (err: unknown) {
                   const message = err instanceof Error ? err.message : "Failed to change password.";
-                  alert(message);
+                  await showAlert({
+                    title: "Password Change Failed",
+                    message,
+                    variant: "error",
+                  });
                 }
               }}
               className="flex flex-col sm:flex-row items-center gap-3 w-full"
@@ -152,7 +161,7 @@ export default function SettingsPageSection() {
               />
               <button
                 type="submit"
-                className="bg-[#FCBA08] hover:bg-[#e5a807] text-[#2B1B0E] font-poppins font-bold text-xs px-6 py-2.5 rounded-xl shadow-sm transition-all focus:outline-none select-none flex-shrink-0"
+                className="bg-[#FCBA08] hover:bg-[#e5a807] text-[#2B1B0E] font-poppins font-bold text-xs px-6 py-2.5 rounded-xl shadow-sm transition-all focus:outline-none select-none flex-shrink-0 cursor-pointer"
               >
                 Update
               </button>
@@ -173,13 +182,20 @@ export default function SettingsPageSection() {
             <button
               type="button"
               onClick={async () => {
-                if (confirm("Are you sure you want to log out from all devices?")) {
+                const confirmed = await showConfirm({
+                  title: "Log Out Everywhere?",
+                  message: "Are you sure you want to log out from all devices? You will need to sign in again.",
+                  confirmText: "Log Out All",
+                  cancelText: "Stay Logged In",
+                  variant: "danger",
+                });
+                if (confirmed) {
                   const { logoutAll } = useAuthStore.getState();
                   await logoutAll();
                   window.location.href = "/login";
                 }
               }}
-              className="bg-red-600 hover:bg-red-700 text-white font-poppins font-bold text-xs sm:text-sm px-5 sm:px-6 py-2.5 rounded-xl shadow-sm hover:scale-[1.02] active:scale-95 transition-all focus:outline-none select-none"
+              className="bg-red-600 hover:bg-red-700 text-white font-poppins font-bold text-xs sm:text-sm px-5 sm:px-6 py-2.5 rounded-xl shadow-sm hover:scale-[1.02] active:scale-95 transition-all focus:outline-none select-none cursor-pointer"
             >
               Log Out All
             </button>

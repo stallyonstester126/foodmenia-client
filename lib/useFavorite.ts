@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/apiClient";
 import { useAuthStore } from "@/lib/authStore";
+import { showAlert } from "@/lib/dialogStore";
 
 export interface ExpandedFavorite {
   id: number | string;
@@ -180,7 +181,11 @@ export function useFavorite(
       if (context?.previousFavorites) {
         queryClient.setQueryData(["favorites"], context.previousFavorites);
       }
-      alert("Failed to update favorite status. Please try again.");
+      showAlert({
+        title: "Favorites",
+        message: "Failed to update favorite status. Please try again.",
+        variant: "error",
+      });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["favorites"] });
