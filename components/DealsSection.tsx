@@ -8,19 +8,19 @@ const deals = [
     id: 1,
     image: "/card1.jpg",
     title: "50% off your 1st order + FREE delivery",
-    code: "NEWPANDA",
+    code: "WELCOME50",
   },
   {
     id: 2,
     image: "/card2.png",
-    title: "up to ₱100 off",
-    code: "PASKONA",
+    title: "Up to $10 off your favorite meal",
+    code: "FOODMENIA",
   },
   {
     id: 3,
     image: "/card3.jpg",
-    title: "₱60 off #BetterWithCoke meals",
-    code: "LUVKOCOKE",
+    title: "Free delivery on orders over $25",
+    code: "FREEDELIVERY",
   },
 ];
 

@@ -17,7 +17,7 @@ export default function MenuHero({
 }: MenuHeroProps) {
   const { data: restaurant } = useRestaurantDetail(restaurantId);
 
-  const title = propName || restaurant?.name || "AL BASIT RESTAURANT";
+  const title = propName || restaurant?.name || "FOODMENIA";
   const heroImage =
     propCoverImage ||
     restaurant?.coverImageUrl ||

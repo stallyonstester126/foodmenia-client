@@ -80,13 +80,7 @@ export function useCuisines() {
         if (res && Array.isArray(res.data)) return res.data;
         return [];
       } catch {
-        return [
-          { id: "1", name: "Burgers", itemCount: 120, image: "/item1.png" },
-          { id: "2", name: "Pizza", itemCount: 85, image: "/item2.png" },
-          { id: "3", name: "Chinese", itemCount: 95, image: "/item3.png" },
-          { id: "4", name: "Desi", itemCount: 110, image: "/item1.png" },
-          { id: "5", name: "Desserts", itemCount: 60, image: "/item2.png" },
-        ];
+        return [];
       }
     },
   });
@@ -178,53 +172,7 @@ export function useRestaurants(params?: {
           cuisines: r.cuisines || [],
         }));
       } catch {
-        if (params?.type === "shop") {
-          return [
-            {
-              id: "shop_1",
-              name: "FoodMenia Supermarket & Grocery",
-              cuisine: "Grocery · Snacks · Beverages",
-              rating: 4.9,
-              deliveryTime: "15-25 mins",
-              isFreeDelivery: true,
-              image: "/shophero.png",
-              type: "shop",
-            },
-            {
-              id: "shop_2",
-              name: "7-Eleven Convenience Store",
-              cuisine: "Convenience · Bakery · Drinks",
-              rating: 4.7,
-              deliveryTime: "10-20 mins",
-              isFreeDelivery: true,
-              image: "/restaurant_seveneleven.png",
-              type: "shop",
-            },
-          ];
-        }
-
-        return [
-          {
-            id: "rest_1",
-            name: "Al Basit Restaurant",
-            cuisine: "Asian · Chinese · Bar B Q",
-            rating: 4.8,
-            deliveryTime: "20-35 mins",
-            isFreeDelivery: true,
-            image: "/ResturantHero.png",
-            type: "restaurant",
-          },
-          {
-            id: "rest_2",
-            name: "Chowking",
-            cuisine: "Chinese · Fast Food",
-            rating: 4.6,
-            deliveryTime: "15-25 mins",
-            isFreeDelivery: false,
-            image: "/card2.png",
-            type: "restaurant",
-          },
-        ];
+        return [];
       }
     },
   });
@@ -262,15 +210,7 @@ export function useRestaurantDetail(id: string) {
           cuisines: Array.isArray(res.cuisines) ? (res.cuisines as { id: number; name: string }[]) : [],
         };
       } catch {
-        return {
-          id: id || "1",
-          name: "Al Basit Restaurant",
-          cuisine: "Asian · Chinese · Bar B Q",
-          rating: 4.8,
-          deliveryTime: "20-35 mins",
-          isFreeDelivery: true,
-          image: "/ResturantHero.png",
-        };
+        return null as unknown as Restaurant;
       }
     },
     enabled: !!id,
@@ -306,12 +246,7 @@ export function useRestaurantMenu(restaurantId: string, category?: string) {
           currency: String(item.currency || (res as Record<string, unknown>)?.currency || "USD ($)"),
         }));
       } catch {
-        return [
-          { id: "item_1", restaurantId, name: "Leg Tikka", description: "Juicy grilled chicken leg tikka piece", price: 430, category: "Popular", image: "/item1.png", isPopular: true },
-          { id: "item_2", restaurantId, name: "Breast Tikka", description: "Flame grilled chicken breast tikka", price: 480, category: "Popular", image: "/item2.png", isPopular: true },
-          { id: "item_3", restaurantId, name: "Jumbo Zinger Burger", description: "Crispy chicken patty with lettuce and sauce", price: 720, category: "Burgers", image: "/item3.png", isPopular: true },
-          { id: "item_4", restaurantId, name: "Beef Burger", description: "Juicy beef patty burger with cheese", price: 650, category: "Burgers", image: "/item1.png" },
-        ];
+        return [];
       }
     },
     enabled: !!restaurantId,
@@ -365,32 +300,7 @@ export function useMenuItemDetail(itemId: string) {
           frequentlyBoughtTogether,
         };
       } catch {
-        return {
-          id: itemId || "item_3",
-          restaurantId: "rest_1",
-          name: "JUMBO ZINGER BURGER",
-          description: "Juicy double zinger chicken patty topped with melted cheese, lettuce, and secret garlic mayo sauce.",
-          price: 720,
-          image: "/item3.png",
-          category: "Burgers",
-          addonGroups: [
-            {
-              id: "g1",
-              title: "Frequently Bought Together",
-              isRequired: false,
-              options: [
-                { id: "o1", name: "Fries", price: 150 },
-                { id: "o2", name: "Coleslaw", price: 100 },
-              ],
-            },
-            {
-              id: "g2",
-              title: "Add a Cheese Slice",
-              isRequired: false,
-              options: [{ id: "o3", name: "1 Slice", price: 60 }],
-            },
-          ],
-        };
+        return null as unknown as MenuItem;
       }
     },
     enabled: !!itemId,
