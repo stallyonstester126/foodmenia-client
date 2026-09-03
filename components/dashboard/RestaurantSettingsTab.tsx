@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ImageUpload from "@/components/ImageUpload";
 import { apiClient } from "@/lib/apiClient";
 
@@ -40,17 +40,34 @@ interface RestaurantSettingsTabProps {
   cuisines: Cuisine[];
 }
 
-const POPULAR_CURRENCIES = [
-  "USD ($)",
-  "EUR (€)",
-  "GBP (£)",
-  "PKR (Rs.)",
-  "INR (₹)",
-  "CAD ($)",
-  "AUD ($)",
-  "AED (AED)",
-  "SAR (SR)",
-  "JPY (¥)",
+const POPULAR_CURRENCIES = ["USD ($)", "EUR (€)", "GBP (£)", "PKR (Rs.)", "AED"];
+
+const DEFAULT_RESTAURANT_CATEGORIES: Cuisine[] = [
+  { id: 32, name: "Fast Food" },
+  { id: 63, name: "Pakistani / Desi" },
+  { id: 67, name: "BBQ & Grill" },
+  { id: 64, name: "Burgers & Sandwiches" },
+  { id: 65, name: "Pizza" },
+  { id: 66, name: "Biryani & Pulao" },
+  { id: 33, name: "Chinese" },
+  { id: 34, name: "Italian" },
+  { id: 70, name: "Shawarma & Wraps" },
+  { id: 68, name: "Cafe & Tea" },
+  { id: 36, name: "Beverages" },
+  { id: 35, name: "Desserts" },
+  { id: 69, name: "Seafood" },
+];
+
+const DEFAULT_SHOP_CATEGORIES: Cuisine[] = [
+  { id: 39, name: "Supermarket" },
+  { id: 37, name: "Grocery" },
+  { id: 38, name: "Bakery" },
+  { id: 40, name: "Fresh Produce" },
+  { id: 71, name: "Dairy & Eggs" },
+  { id: 72, name: "Snacks & Drinks" },
+  { id: 73, name: "Meat & Poultry" },
+  { id: 74, name: "Pharmacy & Wellness" },
+  { id: 75, name: "Household & Cleaning" },
 ];
 
 export default function RestaurantSettingsTab({
@@ -65,8 +82,14 @@ export default function RestaurantSettingsTab({
   const [profileImageUrl, setProfileImageUrl] = useState(restaurant.profile_image_url || "");
   const [coverImageUrl, setCoverImageUrl] = useState(restaurant.cover_image_url || "");
   const [address, setAddress] = useState(restaurant.address || "");
-  const [lat, setLat] = useState<number | undefined>(restaurant.lat ? Number(restaurant.lat) : undefined);
-  const [lng, setLng] = useState<number | undefined>(restaurant.lng ? Number(restaurant.lng) : undefined);
+  const [lat, setLat] = useState(Number(restaurant.lat || 24.8607));
+  const [lng, setLng] = useState(Number(restaurant.lng || 67.0011));
+
+  // Fetch cuisines directly to ensure categories are always loaded
+  const { data: fetchedCuisines = [] } = useQuery<Cuisine[]>({
+    queryKey: ["cuisines"],
+    queryFn: () => apiClient.get<Cuisine[]>("/cuisines"),
+  });
   
   // Currency state
   const initialCurrency = restaurant.currency || "USD ($)";
@@ -423,26 +446,41 @@ export default function RestaurantSettingsTab({
             return !upper.startsWith("FAV CUISINE") && !/\d{5,}/.test(upper);
           };
 
+          const availablePool =
+            fetchedCuisines.length > 0
+              ? fetchedCuisines
+              : cuisines.length > 0
+              ? cuisines
+              : type === "shop"
+              ? DEFAULT_SHOP_CATEGORIES
+              : DEFAULT_RESTAURANT_CATEGORIES;
+
           // Strictly segregated categories from real database cuisines
-          const restaurantCategories = cuisines.filter(
+          const restaurantCategories = availablePool.filter(
             (c) => isClean(c.name) && !isShopCategory(c.name)
           );
 
-          const shopCategories = cuisines.filter(
+          const shopCategories = availablePool.filter(
             (c) => isClean(c.name) && isShopCategory(c.name)
           );
 
-          const activeCategoryList: Cuisine[] =
+          let activeCategoryList: Cuisine[] =
             type === "shop" ? shopCategories : restaurantCategories;
 
-          if (activeCategoryList.length === 0) return null;
+          if (activeCategoryList.length === 0) {
+            activeCategoryList =
+              type === "shop" ? DEFAULT_SHOP_CATEGORIES : DEFAULT_RESTAURANT_CATEGORIES;
+          }
 
           return (
             <div className="bg-white rounded-2xl border border-gray-200/90 p-6 sm:p-7 shadow-2xs flex flex-col gap-4">
-              <div className="border-b border-gray-100 pb-3">
+              <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
                 <h3 className="font-poppins font-bold text-base text-[#1A1A1A]">
                   {type === "shop" ? "Categories Offered" : "Cuisines Offered"}
                 </h3>
+                <span className="text-xs font-poppins text-gray-400">
+                  Select all that apply to your {type === "shop" ? "shop" : "restaurant"}
+                </span>
               </div>
 
               <div className="flex flex-wrap gap-2 pt-1">
