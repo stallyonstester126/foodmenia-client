@@ -51,9 +51,11 @@ export default function CheckoutPageSection() {
   const summaryItems = summary?.items || [];
 
   const subtotal = summary?.subtotal || 0;
+  const tax = summary?.tax || 0;
+  const taxRate = summary?.taxRate || 0;
   const platformFee = summary?.platformFee || 0;
   const deliveryFee = summary?.deliveryFee || 0;
-  const totalBeforeDiscount = summary?.totalBeforeDiscount || (subtotal + deliveryFee + platformFee);
+  const totalBeforeDiscount = summary?.totalBeforeDiscount || (subtotal + tax + deliveryFee + platformFee);
   const discount = summary?.discount || 0;
   const grandTotal = summary?.grandTotal || 0;
 
@@ -325,6 +327,13 @@ export default function CheckoutPageSection() {
                 <span>Platform Fee</span>
                 <span className="font-medium">Rs. {platformFee.toFixed(2)}</span>
               </div>
+
+              {tax > 0 && (
+                <div className="flex items-center justify-between font-poppins text-xs sm:text-sm">
+                  <span>Estimated Tax {taxRate > 0 ? `(${taxRate}%)` : ""}</span>
+                  <span className="font-medium">Rs. {tax.toFixed(2)}</span>
+                </div>
+              )}
 
               {discount > 0 ? (
                 <>

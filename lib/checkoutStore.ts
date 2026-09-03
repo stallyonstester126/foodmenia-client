@@ -21,6 +21,8 @@ export interface SummaryItem {
 export interface CheckoutSummary {
   items: SummaryItem[];
   subtotal: number;
+  tax: number;
+  taxRate?: number;
   deliveryFee: number;
   platformFee: number;
   totalBeforeDiscount: number;
@@ -67,9 +69,11 @@ function normalizeCheckoutSummary(data: Record<string, unknown> | null | undefin
 
   const totals = (data.totals as Record<string, unknown>) || {};
   const subtotal = Number(totals.subtotal ?? data.subtotal ?? 0);
+  const tax = Number(totals.tax_amount ?? totals.tax ?? data.tax ?? 0);
+  const taxRate = Number(totals.tax_rate ?? data.taxRate ?? 0);
   const deliveryFee = Number(totals.delivery_fee ?? data.deliveryFee ?? 0);
   const platformFee = Number(totals.platform_fee ?? data.platformFee ?? 19.99);
-  const totalBeforeDiscount = Number(totals.total_before_discount ?? data.totalBeforeDiscount ?? (subtotal + deliveryFee + platformFee));
+  const totalBeforeDiscount = Number(totals.total_before_discount ?? data.totalBeforeDiscount ?? (subtotal + tax + deliveryFee + platformFee));
   const discount = Number(totals.discount_amount ?? data.discount ?? 0);
   const grandTotal = Number(totals.total ?? data.grandTotal ?? Math.max(0, totalBeforeDiscount - discount));
   const appliedVoucher = (data.applied_voucher as Record<string, unknown>) || {};
@@ -77,6 +81,8 @@ function normalizeCheckoutSummary(data: Record<string, unknown> | null | undefin
   return {
     items,
     subtotal,
+    tax,
+    taxRate,
     deliveryFee,
     platformFee,
     totalBeforeDiscount,
