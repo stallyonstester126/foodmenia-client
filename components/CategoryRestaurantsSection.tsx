@@ -186,50 +186,82 @@ export default function CategoryRestaurantsSection({
   // Strict type segregation: only restaurant on /restaurant, only shop on /shop
   const typedList = rawList.filter((r) => r.type === type);
 
-  // Curated category lists per type (no emojis)
+  // Curated comprehensive category lists per type (no emojis)
   const availableCategories =
     type === "shop"
       ? [
           { id: "ALL", label: "All Shops" },
           { id: "SUPERMARKET", label: "Supermarket" },
-          { id: "BAKERY", label: "Bakery & Bread" },
           { id: "GROCERY", label: "Grocery & Staples" },
+          { id: "BAKERY", label: "Bakery & Bread" },
           { id: "FRESH PRODUCE", label: "Fresh Produce" },
+          { id: "DAIRY & EGGS", label: "Dairy & Eggs" },
+          { id: "MEAT & POULTRY", label: "Meat & Poultry" },
           { id: "SNACKS & DRINKS", label: "Snacks & Drinks" },
+          { id: "PHARMACY", label: "Pharmacy & Wellness" },
+          { id: "HOUSEHOLD", label: "Household & Cleaning" },
         ]
       : [
           { id: "ALL", label: "All Categories" },
           { id: "FAST FOOD", label: "Fast Food" },
           { id: "DESI & BBQ", label: "Desi & BBQ" },
+          { id: "BURGERS", label: "Burgers & Sandwiches" },
+          { id: "PIZZA", label: "Pizza & Italian" },
+          { id: "BIRYANI", label: "Biryani & Pulao" },
           { id: "CHINESE", label: "Chinese & Asian" },
-          { id: "ITALIAN", label: "Italian & Pizza" },
+          { id: "SHAWARMA", label: "Shawarma & Wraps" },
           { id: "BEVERAGES", label: "Beverages & Cafe" },
           { id: "DESSERTS", label: "Desserts & Sweets" },
+          { id: "SEAFOOD", label: "Seafood" },
         ];
 
-  // Helper to determine if an item strictly belongs to a category
+  // Helper to determine if an item belongs to a category
   const matchesCategory = (categoryId: string, item: Restaurant) => {
     if (item.type !== type) return false;
     if (categoryId === "ALL") return true;
 
-    const haystack = `${item.name} ${item.cuisine || ""}`.toUpperCase();
+    // 1. Direct cuisine matching from database cuisines attached to the restaurant
+    const assignedCuisineNames = (item.cuisines || []).map((c) => (c.name || "").toUpperCase());
+    const joinedCuisineString = (item.cuisine || "").toUpperCase();
+    const upperName = (item.name || "").toUpperCase();
 
+    // 2. Keyword mapping for robust matching
     const keywordMap: Record<string, string[]> = {
       "FAST FOOD": ["FAST FOOD", "BURGER", "PIZZA", "SANDWICH", "SHAWARMA", "WRAP", "FRIES"],
-      "DESI & BBQ": ["DESI", "PAKISTANI", "BIRYANI", "BBQ", "GRILL", "KARAHI", "TIKKA", "HANDI"],
+      "DESI & BBQ": ["DESI", "PAKISTANI", "BBQ", "GRILL", "KARAHI", "TIKKA", "HANDI", "BIRYANI", "PULAO", "NIHARI"],
+      "BURGERS": ["BURGER", "SANDWICH", "ZINGER"],
+      "PIZZA": ["PIZZA", "ITALIAN", "PASTA", "SPAGHETTI"],
+      "BIRYANI": ["BIRYANI", "PULAO", "RICE"],
       "CHINESE": ["CHINESE", "ASIAN", "NOODLE", "DUMPLING", "CHOW MEIN"],
-      "ITALIAN": ["ITALIAN", "PASTA", "PIZZA", "SPAGHETTI"],
+      "SHAWARMA": ["SHAWARMA", "WRAP", "ROLL", "PARATHA"],
       "BEVERAGES": ["BEVERAGE", "DRINK", "SHAKE", "JUICE", "COFFEE", "TEA", "CAFE"],
-      "DESSERTS": ["DESSERT", "SWEET", "CAKE", "ICE CREAM", "WAFFLE"],
+      "DESSERTS": ["DESSERT", "SWEET", "CAKE", "ICE CREAM", "WAFFLE", "KHEER", "HALWA"],
+      "SEAFOOD": ["SEAFOOD", "FISH", "PRAWN", "SHRIMP"],
       "SUPERMARKET": ["SUPERMARKET", "MART", "HYPERMARKET", "STORE"],
-      "BAKERY": ["BAKERY", "BREAD", "BUN", "PASTRY", "CROISSANT"],
-      "GROCERY": ["GROCERY", "STAPLE", "MART"],
+      "GROCERY": ["GROCERY", "STAPLE", "MART", "FLOUR", "RICE", "OIL", "PULSES"],
+      "BAKERY": ["BAKERY", "BREAD", "BUN", "PASTRY", "CROISSANT", "RUSK"],
       "FRESH PRODUCE": ["FRESH PRODUCE", "PRODUCE", "FRUIT", "VEGETABLE"],
-      "SNACKS & DRINKS": ["SNACK", "CHIP", "DRINK", "BEVERAGE", "JUICE", "SODA"],
+      "DAIRY & EGGS": ["DAIRY", "EGG", "MILK", "YOGURT", "CHEESE", "BUTTER"],
+      "MEAT & POULTRY": ["MEAT", "POULTRY", "CHICKEN", "BEEF", "MUTTON"],
+      "SNACKS & DRINKS": ["SNACK", "CHIP", "DRINK", "BEVERAGE", "JUICE", "SODA", "BISCUIT"],
+      "PHARMACY": ["PHARMACY", "WELLNESS", "MEDICINE", "HEALTH", "CARE", "MEDICAL", "DRUG"],
+      "HOUSEHOLD": ["HOUSEHOLD", "CLEANING", "DETERGENT", "SOAP"],
     };
 
     const keywords = keywordMap[categoryId] || [categoryId];
-    return keywords.some((kw) => haystack.includes(kw));
+
+    // Priority A: Check if any assigned cuisine matches keywords
+    const matchesAssignedCuisine = assignedCuisineNames.some((cName) =>
+      keywords.some((kw) => cName.includes(kw))
+    );
+    if (matchesAssignedCuisine) return true;
+
+    // Priority B: Check if joined cuisine string matches keywords
+    const matchesJoinedCuisine = keywords.some((kw) => joinedCuisineString.includes(kw));
+    if (matchesJoinedCuisine) return true;
+
+    // Priority C: Check if restaurant/shop name matches keywords
+    return keywords.some((kw) => upperName.includes(kw));
   };
 
   // Determine which sections to render

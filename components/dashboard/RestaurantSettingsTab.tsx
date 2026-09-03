@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import ImageUpload from "@/components/ImageUpload";
@@ -78,6 +78,12 @@ export default function RestaurantSettingsTab({
     restaurant.cuisines ? restaurant.cuisines.map((c) => c.id) : []
   );
 
+  useEffect(() => {
+    if (restaurant.cuisines) {
+      setSelectedCuisineIds(restaurant.cuisines.map((c) => c.id));
+    }
+  }, [restaurant.cuisines]);
+
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -108,6 +114,9 @@ export default function RestaurantSettingsTab({
       setSuccessMsg("Venue profile, map location, and currency settings updated successfully!");
       setErrorMsg(null);
       queryClient.invalidateQueries({ queryKey: ["owner-restaurant"] });
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] });
+      queryClient.invalidateQueries({ queryKey: ["cuisines"] });
+      queryClient.invalidateQueries({ queryKey: ["restaurantDetail"] });
     },
     onError: (err: unknown) => {
       setSuccessMsg(null);
@@ -414,60 +423,17 @@ export default function RestaurantSettingsTab({
             return !upper.startsWith("FAV CUISINE") && !/\d{5,}/.test(upper);
           };
 
-          const DEFAULT_RESTAURANT_CUISINES: Cuisine[] = [
-            { id: 1, name: "Fast Food" },
-            { id: 2, name: "Desi & BBQ" },
-            { id: 3, name: "Chinese & Asian" },
-            { id: 4, name: "Italian & Pizza" },
-            { id: 5, name: "Burgers & Sandwiches" },
-            { id: 6, name: "Biryani & Rice" },
-            { id: 7, name: "Beverages & Cafe" },
-            { id: 8, name: "Desserts & Sweets" },
-            { id: 9, name: "Seafood" },
-            { id: 10, name: "Steaks" },
-          ];
+          // Strictly segregated categories from real database cuisines
+          const restaurantCategories = cuisines.filter(
+            (c) => isClean(c.name) && !isShopCategory(c.name)
+          );
 
-          const DEFAULT_SHOP_CATEGORIES: Cuisine[] = [
-            { id: 101, name: "Supermarket" },
-            { id: 102, name: "Grocery & Staples" },
-            { id: 103, name: "Bakery & Bread" },
-            { id: 104, name: "Fresh Produce" },
-            { id: 105, name: "Snacks & Drinks" },
-            { id: 106, name: "Dairy & Eggs" },
-            { id: 107, name: "Meat & Poultry" },
-            { id: 108, name: "Pharmacy & Wellness" },
-          ];
+          const shopCategories = cuisines.filter(
+            (c) => isClean(c.name) && isShopCategory(c.name)
+          );
 
-          let activeCategoryList: Cuisine[] = [];
-
-          if (type === "shop") {
-            const dbShopCategories = cuisines.filter((c) => isClean(c.name) && isShopCategory(c.name));
-            if (dbShopCategories.length > 0) {
-              activeCategoryList = dbShopCategories;
-            } else {
-              activeCategoryList = DEFAULT_SHOP_CATEGORIES.map((sc) => {
-                const match = cuisines.find((c) => c.name.toUpperCase() === sc.name.toUpperCase());
-                return match ? { id: match.id, name: match.name } : sc;
-              });
-            }
-          } else {
-            // STRICTLY FOR RESTAURANTS: Exclude all shop categories
-            const dbRestaurantCuisines = cuisines.filter((c) => isClean(c.name) && !isShopCategory(c.name));
-            if (dbRestaurantCuisines.length >= 3) {
-              activeCategoryList = dbRestaurantCuisines;
-            } else {
-              // Combine existing DB restaurant cuisines with standard defaults, strictly avoiding any shop categories
-              const existingNames = new Set(dbRestaurantCuisines.map((c) => c.name.toUpperCase()));
-              const supplemented = [...dbRestaurantCuisines];
-              for (const def of DEFAULT_RESTAURANT_CUISINES) {
-                if (!existingNames.has(def.name.toUpperCase())) {
-                  const match = cuisines.find((c) => c.name.toUpperCase() === def.name.toUpperCase());
-                  supplemented.push(match ? { id: match.id, name: match.name } : def);
-                }
-              }
-              activeCategoryList = supplemented;
-            }
-          }
+          const activeCategoryList: Cuisine[] =
+            type === "shop" ? shopCategories : restaurantCategories;
 
           if (activeCategoryList.length === 0) return null;
 

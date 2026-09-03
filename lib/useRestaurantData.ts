@@ -21,6 +21,7 @@ export interface Restaurant {
   isFavorite?: boolean;
   type?: "restaurant" | "shop";
   currency?: string;
+  cuisines?: { id: number; name: string }[];
 }
 
 export interface MenuItemAddonOption {
@@ -172,6 +173,7 @@ export function useRestaurants(params?: {
           type: r.type || "restaurant",
           isFavorite: r.isFavorite || false,
           currency: r.currency || "USD ($)",
+          cuisines: r.cuisines || [],
         }));
       } catch {
         if (params?.type === "shop") {
@@ -255,6 +257,7 @@ export function useRestaurantDetail(id: string) {
           coverImageUrl: coverImageUrl || null,
           image: coverImageUrl || profileImageUrl || String(res.image || "/ResturantHero.png"),
           currency: String(res.currency || "USD ($)"),
+          cuisines: Array.isArray(res.cuisines) ? (res.cuisines as { id: number; name: string }[]) : [],
         };
       } catch {
         return {
