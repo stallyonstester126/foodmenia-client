@@ -111,7 +111,7 @@ export function useRestaurants(params?: {
         if (params?.search) query.append("search", params.search);
         if (params?.sort) query.append("sort", params.sort);
         if (params?.type) query.append("type", params.type);
-        query.append("limit", String(params?.limit || 100));
+        query.append("limit", String(params?.limit || 50));
 
         const qs = query.toString();
         const res = await apiClient.get<unknown>(`/restaurants${qs ? `?${qs}` : ""}`);
@@ -171,7 +171,8 @@ export function useRestaurants(params?: {
           currency: r.currency || "USD ($)",
           cuisines: r.cuisines || [],
         }));
-      } catch {
+      } catch (err) {
+        console.error("Failed to fetch restaurants:", err);
         return [];
       }
     },
