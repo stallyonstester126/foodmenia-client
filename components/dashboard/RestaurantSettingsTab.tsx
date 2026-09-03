@@ -210,7 +210,6 @@ export default function RestaurantSettingsTab({
                     : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100 cursor-pointer"
                 }`}
               >
-                <span>🍔</span>
                 <span>Restaurant</span>
               </button>
 
@@ -228,7 +227,6 @@ export default function RestaurantSettingsTab({
                     : "bg-white text-gray-700 border-gray-200 hover:bg-gray-100 cursor-pointer"
                 }`}
               >
-                <span>🛒</span>
                 <span>Shop / Grocery</span>
               </button>
             </div>
@@ -271,8 +269,8 @@ export default function RestaurantSettingsTab({
         {/* SECTION 2: Visual Branding & Images */}
         <div className="bg-white rounded-2xl border border-gray-200/90 p-6 sm:p-7 shadow-2xs flex flex-col gap-5">
           <div className="border-b border-gray-100 pb-3">
-            <h3 className="font-poppins font-bold text-base text-[#1A1A1A] flex items-center gap-2">
-              🖼️ Visual Assets & Branding
+            <h3 className="font-poppins font-bold text-base text-[#1A1A1A]">
+              Visual Assets & Branding
             </h3>
           </div>
 
@@ -296,8 +294,8 @@ export default function RestaurantSettingsTab({
         {/* SECTION 3: Location & Pricing */}
         <div className="bg-white rounded-2xl border border-gray-200/90 p-6 sm:p-7 shadow-2xs flex flex-col gap-6">
           <div className="border-b border-gray-100 pb-3">
-            <h3 className="font-poppins font-bold text-base text-[#1A1A1A] flex items-center gap-2">
-              📍 Store Location & Currency Settings
+            <h3 className="font-poppins font-bold text-base text-[#1A1A1A]">
+              Store Location & Currency Settings
             </h3>
           </div>
 
@@ -360,7 +358,7 @@ export default function RestaurantSettingsTab({
                     : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
                 }`}
               >
-                ✏️ Custom Currency
+                Custom Currency
               </button>
             </div>
 
@@ -384,50 +382,100 @@ export default function RestaurantSettingsTab({
 
         {/* SECTION 4: Categories & Cuisines Offered */}
         {(() => {
-          const shopNames = ["GROCERY", "BAKERY", "CONVENIENCE", "SUPERMARKET", "SNACKS & DRINKS", "FRESH PRODUCE"];
-          const shopFiltered = cuisines.filter((c) =>
-            shopNames.some((sn) => c.name.toUpperCase().includes(sn))
-          );
-          const restFiltered = cuisines.filter(
-            (c) => !shopNames.some((sn) => c.name.toUpperCase().includes(sn))
-          );
+          const shopKeywords = [
+            "GROCERY",
+            "BAKERY",
+            "CONVENIENCE",
+            "SUPERMARKET",
+            "SNACKS",
+            "DRINKS",
+            "PRODUCE",
+            "DAIRY",
+            "EGGS",
+            "MEAT",
+            "POULTRY",
+            "PHARMACY",
+            "WELLNESS",
+            "HOUSEHOLD",
+            "CLEANING",
+            "MART",
+            "STAPLE",
+            "GENERAL STORE",
+            "SHOP",
+          ];
 
-          const defaultShopCategories: Cuisine[] = [
-            { id: 101, name: "Grocery" },
-            { id: 102, name: "Bakery" },
-            { id: 103, name: "Convenience" },
-            { id: 104, name: "Supermarket" },
+          const isShopCategory = (catName: string) => {
+            const upper = (catName || "").toUpperCase();
+            return shopKeywords.some((kw) => upper.includes(kw));
+          };
+
+          const isClean = (catName: string) => {
+            const upper = (catName || "").toUpperCase();
+            return !upper.startsWith("FAV CUISINE") && !/\d{5,}/.test(upper);
+          };
+
+          const DEFAULT_RESTAURANT_CUISINES: Cuisine[] = [
+            { id: 1, name: "Fast Food" },
+            { id: 2, name: "Desi & BBQ" },
+            { id: 3, name: "Chinese & Asian" },
+            { id: 4, name: "Italian & Pizza" },
+            { id: 5, name: "Burgers & Sandwiches" },
+            { id: 6, name: "Biryani & Rice" },
+            { id: 7, name: "Beverages & Cafe" },
+            { id: 8, name: "Desserts & Sweets" },
+            { id: 9, name: "Seafood" },
+            { id: 10, name: "Steaks" },
+          ];
+
+          const DEFAULT_SHOP_CATEGORIES: Cuisine[] = [
+            { id: 101, name: "Supermarket" },
+            { id: 102, name: "Grocery & Staples" },
+            { id: 103, name: "Bakery & Bread" },
+            { id: 104, name: "Fresh Produce" },
             { id: 105, name: "Snacks & Drinks" },
-            { id: 106, name: "Fresh Produce" },
+            { id: 106, name: "Dairy & Eggs" },
+            { id: 107, name: "Meat & Poultry" },
+            { id: 108, name: "Pharmacy & Wellness" },
           ];
 
           let activeCategoryList: Cuisine[] = [];
 
           if (type === "shop") {
-            if (shopFiltered.length > 0) {
-              activeCategoryList = shopFiltered;
+            const dbShopCategories = cuisines.filter((c) => isClean(c.name) && isShopCategory(c.name));
+            if (dbShopCategories.length > 0) {
+              activeCategoryList = dbShopCategories;
             } else {
-              activeCategoryList = defaultShopCategories.map((sc) => {
+              activeCategoryList = DEFAULT_SHOP_CATEGORIES.map((sc) => {
                 const match = cuisines.find((c) => c.name.toUpperCase() === sc.name.toUpperCase());
                 return match ? { id: match.id, name: match.name } : sc;
               });
             }
           } else {
-            activeCategoryList = restFiltered.length > 0 ? restFiltered : cuisines;
+            // STRICTLY FOR RESTAURANTS: Exclude all shop categories
+            const dbRestaurantCuisines = cuisines.filter((c) => isClean(c.name) && !isShopCategory(c.name));
+            if (dbRestaurantCuisines.length >= 3) {
+              activeCategoryList = dbRestaurantCuisines;
+            } else {
+              // Combine existing DB restaurant cuisines with standard defaults, strictly avoiding any shop categories
+              const existingNames = new Set(dbRestaurantCuisines.map((c) => c.name.toUpperCase()));
+              const supplemented = [...dbRestaurantCuisines];
+              for (const def of DEFAULT_RESTAURANT_CUISINES) {
+                if (!existingNames.has(def.name.toUpperCase())) {
+                  const match = cuisines.find((c) => c.name.toUpperCase() === def.name.toUpperCase());
+                  supplemented.push(match ? { id: match.id, name: match.name } : def);
+                }
+              }
+              activeCategoryList = supplemented;
+            }
           }
-
-          // Sanitize active list from malformed names
-          activeCategoryList = activeCategoryList.filter(
-            (c) => c.name && !c.name.startsWith("Fav Cuisine") && !c.name.match(/\d{10,}/)
-          );
 
           if (activeCategoryList.length === 0) return null;
 
           return (
             <div className="bg-white rounded-2xl border border-gray-200/90 p-6 sm:p-7 shadow-2xs flex flex-col gap-4">
               <div className="border-b border-gray-100 pb-3">
-                <h3 className="font-poppins font-bold text-base text-[#1A1A1A] flex items-center gap-2">
-                  🏷️ {type === "shop" ? "Categories Offered" : "Cuisines Offered"}
+                <h3 className="font-poppins font-bold text-base text-[#1A1A1A]">
+                  {type === "shop" ? "Categories Offered" : "Cuisines Offered"}
                 </h3>
               </div>
 

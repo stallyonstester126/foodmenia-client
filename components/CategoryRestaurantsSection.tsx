@@ -186,25 +186,25 @@ export default function CategoryRestaurantsSection({
   // Strict type segregation: only restaurant on /restaurant, only shop on /shop
   const typedList = rawList.filter((r) => r.type === type);
 
-  // Curated category lists per type
+  // Curated category lists per type (no emojis)
   const availableCategories =
     type === "shop"
       ? [
-          { id: "ALL", label: "All Shops", icon: "🛒" },
-          { id: "SUPERMARKET", label: "Supermarket", icon: "🏬" },
-          { id: "BAKERY", label: "Bakery & Bread", icon: "🥐" },
-          { id: "GROCERY", label: "Grocery & Staples", icon: "🌾" },
-          { id: "FRESH PRODUCE", label: "Fresh Produce", icon: "🥦" },
-          { id: "SNACKS & DRINKS", label: "Snacks & Drinks", icon: "🍿" },
+          { id: "ALL", label: "All Shops" },
+          { id: "SUPERMARKET", label: "Supermarket" },
+          { id: "BAKERY", label: "Bakery & Bread" },
+          { id: "GROCERY", label: "Grocery & Staples" },
+          { id: "FRESH PRODUCE", label: "Fresh Produce" },
+          { id: "SNACKS & DRINKS", label: "Snacks & Drinks" },
         ]
       : [
-          { id: "ALL", label: "All Categories", icon: "🍽️" },
-          { id: "FAST FOOD", label: "Fast Food", icon: "🍔" },
-          { id: "DESI & BBQ", label: "Desi & BBQ", icon: "🍛" },
-          { id: "CHINESE", label: "Chinese & Asian", icon: "🥢" },
-          { id: "ITALIAN", label: "Italian & Pizza", icon: "🍕" },
-          { id: "BEVERAGES", label: "Beverages & Cafe", icon: "🥤" },
-          { id: "DESSERTS", label: "Desserts & Sweets", icon: "🍰" },
+          { id: "ALL", label: "All Categories" },
+          { id: "FAST FOOD", label: "Fast Food" },
+          { id: "DESI & BBQ", label: "Desi & BBQ" },
+          { id: "CHINESE", label: "Chinese & Asian" },
+          { id: "ITALIAN", label: "Italian & Pizza" },
+          { id: "BEVERAGES", label: "Beverages & Cafe" },
+          { id: "DESSERTS", label: "Desserts & Sweets" },
         ];
 
   // Helper to determine if an item strictly belongs to a category
@@ -239,7 +239,7 @@ export default function CategoryRestaurantsSection({
       const activeMeta = availableCategories.find((c) => c.id === selectedCategory);
       return [
         {
-          title: activeMeta ? `${activeMeta.icon} ${activeMeta.label.toUpperCase()}` : selectedCategory,
+          title: activeMeta ? activeMeta.label.toUpperCase() : selectedCategory,
           items: filtered,
         },
       ];
@@ -251,7 +251,7 @@ export default function CategoryRestaurantsSection({
       .map((cat) => {
         const matched = typedList.filter((item) => matchesCategory(cat.id, item));
         return {
-          title: `${cat.icon} ${cat.label.toUpperCase()}`,
+          title: cat.label.toUpperCase(),
           items: matched,
         };
       })
@@ -261,7 +261,7 @@ export default function CategoryRestaurantsSection({
     if (activeSections.length === 0 && typedList.length > 0) {
       return [
         {
-          title: type === "shop" ? "🛒 ALL SHOPS & MARTS" : "🍔 ALL FEATURED RESTAURANTS",
+          title: type === "shop" ? "ALL SHOPS & MARTS" : "ALL FEATURED RESTAURANTS",
           items: typedList,
         },
       ];
@@ -290,12 +290,40 @@ export default function CategoryRestaurantsSection({
 
       {/* Main Container */}
       <div className="relative z-10 w-full max-w-[1196px] mx-auto px-6 sm:px-10 lg:px-12">
-        {/* Interactive Category Filter Pills */}
+        {/* Interactive Category Filter Pills with Scroll Controls and Visible Scrollbar */}
         <div className="mb-10 sm:mb-12 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-poppins text-xs font-bold uppercase tracking-wider text-gray-400">
-              Filter By Category
-            </h3>
+            <div className="flex items-center gap-3">
+              <h3 className="font-poppins text-xs font-bold uppercase tracking-wider text-gray-400">
+                Filter By Category
+              </h3>
+              {/* Scroll buttons for quick horizontal navigation */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById("categories-filter-scroll-container");
+                    if (el) el.scrollBy({ left: -220, behavior: "smooth" });
+                  }}
+                  aria-label="Scroll categories left"
+                  className="w-6 h-6 rounded-full bg-gray-100 hover:bg-[#FCBA08] text-[#2B1B0E] flex items-center justify-center text-xs font-bold transition-all shadow-2xs hover:scale-105 active:scale-95"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById("categories-filter-scroll-container");
+                    if (el) el.scrollBy({ left: 220, behavior: "smooth" });
+                  }}
+                  aria-label="Scroll categories right"
+                  className="w-6 h-6 rounded-full bg-gray-100 hover:bg-[#FCBA08] text-[#2B1B0E] flex items-center justify-center text-xs font-bold transition-all shadow-2xs hover:scale-105 active:scale-95"
+                >
+                  ›
+                </button>
+              </div>
+            </div>
+
             {selectedCategory !== "ALL" && (
               <button
                 type="button"
@@ -307,7 +335,11 @@ export default function CategoryRestaurantsSection({
             )}
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1">
+          {/* Visible, smooth horizontal scrollbar container */}
+          <div
+            id="categories-filter-scroll-container"
+            className="flex items-center gap-2 sm:gap-3 overflow-x-auto scroll-smooth pb-3 pt-1 [scrollbar-width:thin] [scrollbar-color:#FCBA08_#F3F4F6] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#FCBA08] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#e5a807]"
+          >
             {availableCategories.map((cat) => {
               const isSelected = selectedCategory === cat.id;
               const count =
@@ -320,16 +352,15 @@ export default function CategoryRestaurantsSection({
                   key={cat.id}
                   type="button"
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2.5 rounded-full font-poppins text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all duration-200 border ${
+                  className={`px-4 py-2.5 rounded-full font-poppins text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition-all duration-200 border cursor-pointer ${
                     isSelected
                       ? "bg-[#2B1B0E] text-[#FCBA08] border-[#2B1B0E] shadow-sm scale-105"
                       : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
                   }`}
                 >
-                  <span>{cat.icon}</span>
                   <span>{cat.label}</span>
                   <span
-                    className={`text-[11px] px-1.5 py-0.2 rounded-full ${
+                    className={`text-[11px] px-1.5 py-0.2 rounded-full font-bold ${
                       isSelected ? "bg-[#FCBA08]/20 text-[#FCBA08]" : "bg-gray-100 text-gray-500"
                     }`}
                   >
@@ -345,7 +376,11 @@ export default function CategoryRestaurantsSection({
         <div className="flex flex-col gap-12 sm:gap-16">
           {categorySectionsToRender.length === 0 || categorySectionsToRender.every((s) => s.items.length === 0) ? (
             <div className="w-full bg-gray-50 border border-gray-200 rounded-3xl p-10 flex flex-col items-center justify-center text-center gap-3">
-              <span className="text-4xl">🔍</span>
+              <div className="w-12 h-12 rounded-full bg-amber-100/70 flex items-center justify-center text-[#2B1B0E]">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
               <h3 className="font-mali text-xl font-bold text-[#2B1B0E]">
                 No {type === "shop" ? "shops" : "restaurants"} found in this category
               </h3>
@@ -355,7 +390,7 @@ export default function CategoryRestaurantsSection({
               <button
                 type="button"
                 onClick={() => setSelectedCategory("ALL")}
-                className="mt-2 bg-[#FCBA08] text-[#2B1B0E] font-poppins font-bold text-xs px-5 py-2.5 rounded-xl hover:bg-[#e5a807] transition-all shadow-sm"
+                className="mt-2 bg-[#FCBA08] text-[#2B1B0E] font-poppins font-bold text-xs px-5 py-2.5 rounded-xl hover:bg-[#e5a807] transition-all shadow-sm cursor-pointer"
               >
                 View All {type === "shop" ? "Shops" : "Restaurants"}
               </button>
