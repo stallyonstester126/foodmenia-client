@@ -149,7 +149,12 @@ export default function RestaurantOnboardingSection({
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => setType("restaurant")}
+                    onClick={() => {
+                      if (type !== "restaurant") {
+                        setType("restaurant");
+                        setSelectedCuisineIds([]);
+                      }
+                    }}
                     className={`py-3 px-4 rounded-xl font-poppins font-bold text-sm flex items-center justify-center gap-2 border transition-all ${
                       type === "restaurant"
                         ? "bg-[#2B1B0E] text-[#FCBA08] border-[#2B1B0E] shadow-sm"
@@ -162,7 +167,12 @@ export default function RestaurantOnboardingSection({
 
                   <button
                     type="button"
-                    onClick={() => setType("shop")}
+                    onClick={() => {
+                      if (type !== "shop") {
+                        setType("shop");
+                        setSelectedCuisineIds([]);
+                      }
+                    }}
                     className={`py-3 px-4 rounded-xl font-poppins font-bold text-sm flex items-center justify-center gap-2 border transition-all ${
                       type === "shop"
                         ? "bg-[#2B1B0E] text-[#FCBA08] border-[#2B1B0E] shadow-sm"
@@ -245,44 +255,49 @@ export default function RestaurantOnboardingSection({
 
               {/* Cuisines / Categories Selector */}
               {(() => {
-                const shopNames = ["GROCERY", "BAKERY", "CONVENIENCE", "SUPERMARKET", "SNACKS & DRINKS", "FRESH PRODUCE"];
-                const shopFiltered = cuisines.filter((c) =>
-                  shopNames.some((sn) => c.name.toUpperCase().includes(sn))
-                );
-                const restFiltered = cuisines.filter(
-                  (c) => !shopNames.some((sn) => c.name.toUpperCase().includes(sn))
-                );
-
-                const defaultShopCategories: Cuisine[] = [
-                  { id: 101, name: "Grocery" },
-                  { id: 102, name: "Bakery" },
-                  { id: 103, name: "Convenience" },
-                  { id: 104, name: "Supermarket" },
-                  { id: 105, name: "Snacks & Drinks" },
-                  { id: 106, name: "Fresh Produce" },
+                const shopKeywords = [
+                  "GROCERY",
+                  "BAKERY",
+                  "CONVENIENCE",
+                  "SUPERMARKET",
+                  "SNACKS & DRINKS",
+                  "FRESH PRODUCE",
+                  "DAIRY & EGGS",
+                  "MEAT & POULTRY",
+                  "PHARMACY & WELLNESS",
+                  "HOUSEHOLD & CLEANING",
+                  "MART",
+                  "PHARMACY",
                 ];
 
-                let activeCategoryList: Cuisine[] = [];
+                const isShopItem = (name: string) => {
+                  const upper = name.toUpperCase();
+                  return shopKeywords.some((keyword) => upper.includes(keyword));
+                };
 
-                if (type === "shop") {
-                  if (shopFiltered.length > 0) {
-                    activeCategoryList = shopFiltered;
-                  } else {
-                    activeCategoryList = defaultShopCategories.map((sc) => {
-                      const match = cuisines.find((c) => c.name.toUpperCase() === sc.name.toUpperCase());
-                      return match ? { id: match.id, name: match.name } : sc;
-                    });
-                  }
-                } else {
-                  activeCategoryList = restFiltered.length > 0 ? restFiltered : cuisines;
-                }
+                const isCleanItem = (name: string) => {
+                  const upper = name.toUpperCase();
+                  return !upper.startsWith("FAV CUISINE") && !/\d{5,}/.test(upper);
+                };
+
+                // Strictly segregated categories
+                const restaurantCategories = cuisines.filter(
+                  (c) => isCleanItem(c.name) && !isShopItem(c.name)
+                );
+
+                const shopCategories = cuisines.filter(
+                  (c) => isCleanItem(c.name) && isShopItem(c.name)
+                );
+
+                const activeCategoryList: Cuisine[] =
+                  type === "shop" ? shopCategories : restaurantCategories;
 
                 if (activeCategoryList.length === 0) return null;
 
                 return (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 animate-in fade-in duration-150">
                     <label className="font-poppins text-xs font-semibold text-[#1A1A1A]">
-                      {type === "shop" ? "Categories Offered" : "Cuisines Offered"}
+                      {type === "shop" ? "Shop & Grocery Categories Offered" : "Restaurant Cuisines Offered"}
                     </label>
                     <div className="flex flex-wrap gap-2 pt-1">
                       {activeCategoryList.map((c) => {
@@ -294,7 +309,7 @@ export default function RestaurantOnboardingSection({
                             onClick={() => toggleCuisine(c.id)}
                             className={`px-3.5 py-2 rounded-xl font-poppins text-xs font-semibold transition-all ${
                               selected
-                                ? "bg-[#FCBA08] text-[#2B1B0E] shadow-sm"
+                                ? "bg-[#FCBA08] text-[#2B1B0E] shadow-sm scale-[1.02]"
                                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                             }`}
                           >
